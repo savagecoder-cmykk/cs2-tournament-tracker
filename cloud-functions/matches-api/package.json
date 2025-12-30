@@ -1,0 +1,9 @@
+{
+  "name": "matches-api",
+  "version": "1.0.0",
+  "description": "CS2比赛记录API",
+  "main": "index.js",
+  "dependencies": {
+    "tcb-admin-node": "^1.19.8"
+  }
+}

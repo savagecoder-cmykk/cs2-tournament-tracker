@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HHTV-黄河track</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 52px - 42px);
+        }
+
+        /* 左侧比赛列表 */
+        .match-list {
+            width: 350px;
+            background: #2a2a2a;
+            border-right: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .match-list-header {
+            padding: 20px;
+            background: #333;
+            border-bottom: 1px solid #444;
+        }
+
+        .match-list-header h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .upload-btn {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .upload-btn:hover {
+            background: #0056b3;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .matches-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .match-card {
+            background: #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #007bff;
+            position: relative;
+        }
+
+        .match-card:hover {
+            background: #404040;
+            transform: translateX(5px);
+        }
+
+        .match-card.active {
+            background: #404040;
+            border-left-color: #28a745;
+        }
+
+        .match-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .match-map {
+            font-size: 14px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        /* 右侧比赛详情 */
+        .match-details {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+
+        .match-header {
+            background: rgba(51, 51, 51, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .match-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .match-result {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .team-result {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .team-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .team-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .vs {
+            font-size: 18px;
+            font-weight: bold;
+            color: #888;
+            margin: 0 10px;
+        }
+
+        .winner {
+            color: #28a745;
+        }
+
+        .loser {
+            color: #dc3545;
+        }
+
+        .game-info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #888;
+        }
+
+        .score-line {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+        }
+
+        .half-score {
+            text-align: center;
+            color: #888;
+        }
+
+        .half-score .score {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+
+        /* 选手列表 */
+        .players-container {
+            background: rgba(51, 51, 51, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .team-section {
+            margin-bottom: 30px;
+        }
+
+        .team-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .player-card {
+            background: #3a3a3a;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-card:hover {
+            background: #444;
+        }
+
+        .player-card.expanded {
+            background: #444;
+        }
+
+        .player-main-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #007bff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+        }
+
+        .player-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 11px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+        }
+
+        .kda {
+            color: #e0e0e0;
+        }
+
+        .rws {
+            color: #ffc107;
+        }
+
+        .rating {
+            color: #28a745;
+        }
+
+        .player-details {
+            background: #444;
+            border-radius: 0 0 8px 8px;
+            padding: 15px;
+            margin-top: -8px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .detail-item {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .detail-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .rank {
+            background: #666;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .no-match-selected {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #666;
+            font-size: 18px;
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        /* 标签页样式 */
+        .tab-navigation {
+            display: flex;
+            background: #2a2a2a;
+            border-bottom: 1px solid #444;
+        }
+
+        .tab-btn {
+            padding: 15px 30px;
+            background: #333;
+            color: #e0e0e0;
+            border: none;
+            border-right: 1px solid #444;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            background: #404040;
+        }
+
+        .tab-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .tab-content {
+            flex: 1;
+            display: flex;
+            height: auto;
+            min-height: 100%;
+        }
+
+        .tab-pane {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .tab-pane.active {
+            display: flex;
+        }
+
+        /* 数据看板样式 */
+        .sub-tab-navigation {
+            display: flex;
+            background: #333;
+            border-bottom: 1px solid #444;
+            padding: 10px;
+            gap: 10px;
+        }
+
+        .sub-tab-btn {
+            padding: 8px 20px;
+            background: #444;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sub-tab-btn:hover {
+            background: #505050;
+        }
+
+        .sub-tab-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .sub-tab-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sub-tab-pane {
+            display: none;
+        }
+
+        .sub-tab-pane.active {
+            display: block;
+        }
+
+        /* 选手数据表格样式 */
+        .player-data-container h2 {
+            margin-bottom: 20px;
+            color: #fff;
+            font-size: 24px;
+        }
+
+        #playerStatsTable {
+            background: rgba(51, 51, 51, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            overflow-x: auto;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stats-table th,
+        .stats-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #444;
+        }
+
+        .stats-table th {
+            background: #3a3a3a;
+            color: #fff;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .stats-table tbody tr {
+            background: #3a3a3a;
+            transition: background 0.3s;
+        }
+
+        .stats-table tbody tr:hover {
+            background: #444;
+        }
+
+        /* 榜单样式 */
+        .leaderboards-container h2 {
+            margin-bottom: 20px;
+            color: #fff;
+            font-size: 24px;
+        }
+
+        .leaderboard {
+            background: rgba(51, 51, 51, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .leaderboard-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: #3a3a3a;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .leaderboard-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: #3a3a3a;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        .leaderboard-row:hover {
+            background: #444;
+            transform: translateX(5px);
+        }
+
+        .leaderboard-row.top3 {
+            background: linear-gradient(90deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.05));
+        }
+
+        .leaderboard-row .rank {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .leaderboard-row .rank.gold {
+            color: #ffd700;
+        }
+
+        .leaderboard-row .rank.silver {
+            color: #c0c0c0;
+        }
+
+        .leaderboard-row .rank.bronze {
+            color: #cd7f32;
+        }
+
+        .leaderboard-row .player-name {
+            flex: 1;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .leaderboard-row .score {
+            width: 100px;
+            text-align: right;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .leaderboard-row .metric {
+            width: 120px;
+            text-align: right;
+            color: #888;
+        }
+
+        /* 徽章样式 */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.key-entry {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+        }
+
+        .badge.team-brain {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            color: white;
+            box-shadow: 0 2px 8px rgba(78, 205, 196, 0.4);
+        }
+
+        .badge.elite-sniper {
+            background: linear-gradient(45deg, #a8edea, #fed6e3);
+            color: #333;
+            box-shadow: 0 2px 8px rgba(168, 237, 234, 0.6);
+        }
+
+        .badge.iron-man {
+            background: linear-gradient(45deg, #ff9a9e, #fecfef);
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 154, 158, 0.4);
+        }
+
+        .badge.breakout {
+            background: linear-gradient(45deg, #ffe66d, #ffd166);
+            color: #333;
+            animation: glow 2s ease-in-out infinite alternate;
+            box-shadow: 0 2px 8px rgba(255, 230, 109, 0.4);
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 2px 4px rgba(255, 230, 109, 0.3); }
+            to { box-shadow: 0 4px 12px rgba(255, 230, 109, 0.6); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .tab-content {
+                height: auto;
+            }
+
+            .match-list {
+                width: 100%;
+                height: 40vh;
+            }
+
+            .match-details {
+                height: 60vh;
+                padding: 15px;
+            }
+
+            .tab-btn {
+                padding: 15px 12px;
+                font-size: 14px;
+            }
+
+            /* 数据看板响应式优化 */
+            .sub-tab-navigation {
+                flex-wrap: wrap;
+                padding: 10px 5px;
+            }
+
+            .sub-tab-btn {
+                padding: 8px 15px;
+                font-size: 13px;
+            }
+
+            .sub-tab-content {
+                padding: 15px 10px;
+            }
+
+            /* 选手数据表格响应式优化 */
+            #playerStatsTable {
+                overflow-x: auto;
+                padding: 10px;
+            }
+
+            .stats-table {
+                font-size: 12px;
+            }
+
+            .stats-table th,
+            .stats-table td {
+                padding: 8px 10px;
+            }
+
+            /* 榜单响应式优化 */
+            .leaderboard {
+                padding: 15px;
+            }
+
+            .leaderboard-title {
+                font-size: 16px;
+            }
+
+            .leaderboard-row {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .leaderboard-row .rank {
+                width: 25px;
+            }
+
+            .leaderboard-row .score {
+                width: 80px;
+            }
+
+            .leaderboard-row .metric {
+                width: 100px;
+                font-size: 12px;
+            }
+        }
+
+        /* 平板设备优化 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .match-list {
+                width: 300px;
+            }
+
+            .stats-table {
+                font-size: 13px;
+            }
+
+            .leaderboard-row {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标签页导航 -->
+    <div class="tab-navigation">
+        <button class="tab-btn active" data-tab="match-history">
+            <i class="fas fa-trophy"></i> 赛事历史
+        </button>
+        <button class="tab-btn" data-tab="data-dashboard">
+            <i class="fas fa-chart-line"></i> 数据看板
+        </button>
+    </div>
+
+    <!-- 数据看板子菜单容器 -->
+    <div class="sub-tab-navigation-container" id="subTabNavContainer" style="display: none;">
+        <div class="sub-tab-navigation">
+            <button class="sub-tab-btn active" data-subtab="player-data">
+                <i class="fas fa-users"></i> 查看选手数据
+            </button>
+            <button class="sub-tab-btn" data-subtab="leaderboards">
+                <i class="fas fa-crown"></i> 榜单
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 标签页内容 -->
+        <div class="tab-content">
+            <!-- 赛事历史标签页 -->
+            <div class="tab-pane active" id="match-history">
+                <!-- 左侧比赛列表 -->
+                <div class="match-list">
+                    <div class="match-list-header">
+                        <h1><i class="fas fa-trophy"></i> 赛事历史</h1>
+                        <label for="fileInput" class="upload-btn">
+                            <i class="fas fa-upload"></i> 上传比赛记录
+                        </label>
+                        <input type="file" id="fileInput" accept=".xlsx, .xls" />
+                    </div>
+                    <div class="matches-container" id="matchesContainer">
+                        <!-- 比赛卡片将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 右侧比赛详情 -->
+                <div class="match-details" id="matchDetails">
+                    <div class="no-match-selected">
+                        <i class="fas fa-info-circle"></i> 请选择一个比赛查看详情
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据看板标签页 -->
+            <div class="tab-pane" id="data-dashboard">
+                <!-- 数据看板子标签页内容 -->
+                <div class="sub-tab-content">
+                    <!-- 查看选手数据子标签页 -->
+                    <div class="sub-tab-pane active" id="player-data">
+                        <div class="player-data-container">
+                            <h2>选手数据统计</h2>
+                            <div id="playerStatsTable">
+                                <!-- 选手数据表格将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 榜单子标签页 -->
+                    <div class="sub-tab-pane" id="leaderboards">
+                        <div class="leaderboards-container">
+                            <h2>选手榜单</h2>
+                            <div id="leaderboardsContent">
+                                <!-- 榜单内容将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SheetJS库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        // 初始化本地存储
+        if (!localStorage.getItem('cs2Matches')) {
+            localStorage.setItem('cs2Matches', JSON.stringify([]));
+        }
+
+        let matches = JSON.parse(localStorage.getItem('cs2Matches'));
+        let selectedMatch = null;
+
+        // 渲染比赛列表
+        function renderMatchList() {
+            const container = document.getElementById('matchesContainer');
+            container.innerHTML = '';
+
+            matches.forEach((match, index) => {
+                const card = document.createElement('div');
+                card.className = `match-card ${selectedMatch === index ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="match-name">${match.name}</div>
+                    <div class="match-map">
+                        <i class="fas fa-map-marker-alt"></i>
+                        ${match.map}
+                    </div>
+                    <button class="delete-btn" onclick="deleteMatch(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                card.addEventListener('click', () => selectMatch(index));
+                container.appendChild(card);
+            });
+        }
+
+        // 选择比赛
+        function selectMatch(index) {
+            selectedMatch = index;
+            renderMatchList();
+            renderMatchDetails(matches[index]);
+        }
+
+        // 渲染比赛详情
+        function renderMatchDetails(match) {
+            const container = document.getElementById('matchDetails');
+            
+            if (!match) {
+                container.innerHTML = '<div class="no-match-selected"><i class="fas fa-info-circle"></i> 请选择一个比赛查看详情</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="match-header">
+                    <div class="match-info">
+                        <div class="match-result">
+                            <div class="team-result">
+                                <div class="team-name winner">${match.teamA.name}</div>
+                                <div class="team-score">${match.teamA.score}</div>
+                            </div>
+                            <div style="font-size: 20px; color: #888;">vs</div>
+                            <div class="team-result">
+                                <div class="team-score">${match.teamB.score}</div>
+                                <div class="team-name loser">${match.teamB.name}</div>
+                            </div>
+                        </div>
+                        <div class="game-info">
+                            <div class="info-item">
+                                <i class="fas fa-gamepad"></i>
+                                <span>${match.gameMode}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-server"></i>
+                                <span>${match.server}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="score-line">
+                        <div class="team-score">${match.teamA.score}</div>
+                        <div class="vs">VS</div>
+                        <div class="team-score">${match.teamB.score}</div>
+                    </div>
+                </div>
+
+                <div class="players-container">
+                    <div class="team-section">
+                        <div class="team-title winner">${match.teamA.name} (胜利)</div>
+                        <div id="teamAPlayers"></div>
+                    </div>
+                    <div class="team-section">
+                        <div class="team-title loser">${match.teamB.name} (失败)</div>
+                        <div id="teamBPlayers"></div>
+                    </div>
+                </div>
+            `;
+
+            // 渲染选手列表
+            renderPlayers('teamAPlayers', match.teamA.players);
+            renderPlayers('teamBPlayers', match.teamB.players);
+        }
+
+        // 渲染选手列表
+        function renderPlayers(containerId, players) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            players.forEach((player, index) => {
+                const playerCard = document.createElement('div');
+                playerCard.className = 'player-card';
+                playerCard.innerHTML = `
+                    <div class="player-main-info">
+                        <div class="player-avatar">${player.name.charAt(0)}</div>
+                        <div class="player-name">${player.name}</div>
+                    </div>
+                    <div class="player-stats">
+                        <div class="stat-item kda">
+                            <div class="stat-value">${player.kda}</div>
+                            <div class="stat-label">K/D/A</div>
+                        </div>
+                        <div class="stat-item rws">
+                            <div class="stat-value">${player.rws}</div>
+                            <div class="stat-label">RWS</div>
+                        </div>
+                        <div class="stat-item rating">
+                            <div class="stat-value">${player.rating}</div>
+                            <div class="stat-label">Rating+</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${player.rank || '-'}</div>
+                            <div class="stat-label">天梯</div>
+                        </div>
+                    </div>
+                `;
+
+                // 添加点击展开详情功能
+                playerCard.addEventListener('click', () => {
+                    if (playerCard.classList.contains('expanded')) {
+                        playerCard.classList.remove('expanded');
+                        const details = playerCard.querySelector('.player-details');
+                        if (details) details.remove();
+                    } else {
+                        playerCard.classList.add('expanded');
+                        const details = document.createElement('div');
+                        details.className = 'player-details';
+                        details.innerHTML = `
+                            <div class="detail-item">
+                                <div class="detail-value">${player.kdRatio}</div>
+                                <div class="detail-label">K/D</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-value">${player.adr}</div>
+                                <div class="detail-label">ADR</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-value">${player.headshots}</div>
+                                <div class="detail-label">爆头击杀</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-value">${player.headshotPercentage}%</div>
+                                <div class="detail-label">爆头率</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-value">${player.kast}%</div>
+                                <div class="detail-label">KAST</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-value">${player.snipes}</div>
+                                <div class="detail-label">狙杀</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-value">${player.firstKills}</div>
+                                <div class="detail-label">首杀</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-value">${player.firstDeaths}</div>
+                                <div class="detail-label">首死</div>
+                            </div>
+                        `;
+                        playerCard.appendChild(details);
+                    }
+                });
+
+                container.appendChild(playerCard);
+            });
+        }
+
+        // 删除比赛
+        function deleteMatch(index) {
+            if (confirm('确定要删除这个比赛记录吗？')) {
+                matches.splice(index, 1);
+                localStorage.setItem('cs2Matches', JSON.stringify(matches));
+                selectedMatch = null;
+                renderMatchList();
+                renderMatchDetails(null);
+            }
+        }
+
+        // 处理文件上传
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 验证文件类型
+            if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                alert('请上传Excel文件（.xlsx或.xls格式）！');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // 检查是否有工作表
+                    if (workbook.SheetNames.length === 0) {
+                        alert('Excel文件中没有找到工作表！');
+                        return;
+                    }
+                    
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    // 检查是否有数据
+                    if (jsonData.length === 0) {
+                        alert('Excel文件中没有找到有效数据！');
+                        return;
+                    }
+
+                    // 解析Excel数据
+                    const match = parseMatchData(jsonData);
+                    if (match) {
+                        matches.push(match);
+                        localStorage.setItem('cs2Matches', JSON.stringify(matches));
+                        renderMatchList();
+                        alert('比赛记录上传成功！');
+                    } else {
+                        alert('无法解析Excel文件中的数据，请检查文件格式是否正确！');
+                    }
+                } catch (error) {
+                    console.error('文件处理失败:', error);
+                    alert('文件处理失败，请检查文件是否损坏或格式是否正确！');
+                }
+            };
+            
+            reader.onerror = () => {
+                alert('文件读取失败，请重试！');
+            };
+            
+            reader.readAsArrayBuffer(file);
+        });
+
+        // 解析比赛数据
+        function parseMatchData(data) {
+            // 解析新的Excel模板数据
+            try {
+                if (!data || data.length === 0) {
+                    return null;
+                }
+
+                // 动态检测数据列名（查找包含"对黑"的列）
+                let dataColumnName = null;
+                if (data[0]) {
+                    dataColumnName = Object.keys(data[0]).find(key => key.includes('对黑'));
+                    console.log('检测到数据列名:', dataColumnName);
+                }
+
+                // 创建比赛对象
+                const match = {
+                    name: `比赛 ${new Date().toLocaleString()}`,
+                    map: '未知地图',
+                    gameMode: '自定义约战',
+                    server: '未知服务器',
+                    teamA: {
+                        name: 'TEAM-A',
+                        score: 0,
+                        players: []
+                    },
+                    teamB: {
+                        name: 'TEAM-B',
+                        score: 0,
+                        players: []
+                    },
+                    halftime: {
+                        teamA: 0,
+                        teamB: 0
+                    },
+                    secondHalf: {
+                        teamA: 0,
+                        teamB: 0
+                    }
+                };
+
+                // 解析比赛名称（使用动态检测到的"对黑"列名）
+                if (dataColumnName) {
+                    match.name = dataColumnName; // 直接使用"对黑"列名作为比赛名称
+                    console.log('解析到比赛名称:', match.name);
+                }
+
+                // 如果没有找到数据列名，返回错误
+                if (!dataColumnName) {
+                    console.error('无法找到包含"对黑"关键字的数据列');
+                    return null;
+                }
+
+                // 解析地图信息（第0行）
+                const mapRow = data[0];
+                if (mapRow && mapRow['比赛名称'] === '地图' && mapRow[dataColumnName]) {
+                    match.map = mapRow[dataColumnName];
+                    console.log('解析到地图:', match.map);
+                }
+
+                // 解析队伍A和队伍B的数据
+                let teamARows = [];
+                let teamBRows = [];
+                let currentTeam = null;
+                let playerCount = 0;
+
+                data.forEach((row, index) => {
+                    // 打印当前行数据用于调试
+                    console.log(`第${index}行:`, row);
+                    
+                    // 检测队伍标记
+                    if (row['比赛名称'] === '队伍名称') {
+                        const teamName = row[dataColumnName];
+                        const score = row['__EMPTY_1'];
+                        
+                        if (teamName === '队伍A') {
+                            currentTeam = 'A';
+                            playerCount = 0;
+                            match.teamA.name = teamName;
+                            match.teamA.score = score || 0;
+                            console.log('检测到队伍A开始，比分:', score);
+                        } else if (teamName === '队伍B') {
+                            currentTeam = 'B';
+                            playerCount = 0;
+                            match.teamB.name = teamName;
+                            match.teamB.score = score || 0;
+                            console.log('检测到队伍B开始，比分:', score);
+                        }
+                        return;
+                    }
+                    
+                    // 检测选手表头（跳过）
+                    if (row[dataColumnName] === '选手名称') {
+                        console.log('检测到选手表头');
+                        playerCount = 0;
+                        return;
+                    }
+                    
+                    // 收集选手数据（每个队伍最多5个选手）
+                    if (currentTeam && row[dataColumnName] && typeof row[dataColumnName] === 'string' && row[dataColumnName].trim() !== '') {
+                        if (currentTeam === 'A' && playerCount < 5) {
+                            teamARows.push(row);
+                            playerCount++;
+                            console.log(`添加队伍A选手${playerCount}:`, row[dataColumnName]);
+                        } else if (currentTeam === 'B' && playerCount < 5) {
+                            teamBRows.push(row);
+                            playerCount++;
+                            console.log(`添加队伍B选手${playerCount}:`, row[dataColumnName]);
+                        }
+                    }
+                });
+                
+                // 打印解析结果用于调试
+                console.log('队伍A选手数:', teamARows.length);
+                console.log('队伍B选手数:', teamBRows.length);
+
+                // 解析选手数据
+                if (teamARows.length > 0) {
+                    match.teamA.players = parsePlayers(teamARows, 'A', dataColumnName);
+                }
+                if (teamBRows.length > 0) {
+                    match.teamB.players = parsePlayers(teamBRows, 'B', dataColumnName);
+                }
+
+                // 确定比赛结果和分数
+                let teamAWon = false;
+                let teamBWon = false;
+                
+                // 检查队伍A是否获胜
+                if (teamARows.length > 0 && teamARows[0]['__EMPTY_13'] === '胜利') {
+                    teamAWon = true;
+                }
+                // 检查队伍B是否获胜
+                if (teamBRows.length > 0 && teamBRows[0]['__EMPTY_13'] === '胜利') {
+                    teamBWon = true;
+                }
+
+                // 不设置硬编码的比赛分数，只根据Excel中的实际数据显示
+                // 由于Excel中没有提供具体比分，保持默认值0-0
+
+                return match;
+            } catch (error) {
+                console.error('解析Excel数据失败:', error);
+                return null;
+            }
+        }
+
+        // 解析选手数据
+        function parsePlayers(dataRows, team, dataColumnName) {
+            const players = [];
+            dataRows.forEach((row, index) => {
+                // 从行数据中提取选手信息
+                const player = {
+                    name: `选手${index + 1}`,
+                    kda: '0/0/0',
+                    rws: 0,
+                    rating: 0,
+                    rank: '-',
+                    kdRatio: 0,
+                    adr: 0,
+                    headshots: 0,
+                    headshotPercentage: 0,
+                    kast: 0,
+                    snipes: 0,
+                    firstKills: 0,
+                    firstDeaths: 0
+                };
+
+                // 提取选手名称（新模板中选手名称在动态检测到的数据列中）
+                if (row[dataColumnName] && typeof row[dataColumnName] === 'string') {
+                    player.name = row[dataColumnName];
+                }
+
+                // 提取K/D/A数据
+                let kills = 0, deaths = 0, assists = 0;
+                
+                // 击杀数据（__EMPTY）
+                if (row['__EMPTY'] !== undefined && typeof row['__EMPTY'] === 'number') {
+                    kills = parseInt(row['__EMPTY']);
+                }
+                
+                // 助攻数据（__EMPTY_1）
+                if (row['__EMPTY_1'] !== undefined && typeof row['__EMPTY_1'] === 'number') {
+                    assists = parseInt(row['__EMPTY_1']);
+                }
+                
+                // 死亡数据（__EMPTY_2）
+                if (row['__EMPTY_2'] !== undefined && typeof row['__EMPTY_2'] === 'number') {
+                    deaths = parseInt(row['__EMPTY_2']);
+                }
+                player.kda = `${kills}/${deaths}/${assists}`;
+                player.kdRatio = deaths > 0 ? (kills / deaths).toFixed(2) : kills;
+
+                // 提取RWS（__EMPTY_3）和Rating+（__EMPTY_4）
+                if (row['__EMPTY_3'] !== undefined && typeof row['__EMPTY_3'] === 'number') {
+                    player.rws = row['__EMPTY_3'].toFixed(1);
+                }
+                
+                if (row['__EMPTY_4'] !== undefined && typeof row['__EMPTY_4'] === 'number') {
+                    player.rating = row['__EMPTY_4'].toFixed(2);
+                }
+
+                // 提取其他详细数据
+                // K/D（__EMPTY_5）- 已经计算，这里可以覆盖
+                if (row['__EMPTY_5'] !== undefined && typeof row['__EMPTY_5'] === 'number') {
+                    player.kdRatio = row['__EMPTY_5'].toFixed(2);
+                }
+                
+                // ADR（__EMPTY_6）
+                if (row['__EMPTY_6'] !== undefined && typeof row['__EMPTY_6'] === 'number') {
+                    player.adr = parseInt(row['__EMPTY_6']);
+                }
+                
+                // 爆头击杀数（__EMPTY_7）
+                if (row['__EMPTY_7'] !== undefined && typeof row['__EMPTY_7'] === 'number') {
+                    player.headshots = parseInt(row['__EMPTY_7']);
+                }
+                
+                // 爆头率（__EMPTY_8）
+                if (row['__EMPTY_8'] !== undefined && typeof row['__EMPTY_8'] === 'number') {
+                    player.headshotPercentage = parseInt(row['__EMPTY_8'] * 100); // 转换为百分比
+                }
+                
+                // KAST（__EMPTY_9）
+                if (row['__EMPTY_9'] !== undefined && typeof row['__EMPTY_9'] === 'number') {
+                    player.kast = parseInt(row['__EMPTY_9'] * 100); // 转换为百分比
+                }
+                
+                // 狙杀数（__EMPTY_10）
+                if (row['__EMPTY_10'] !== undefined && typeof row['__EMPTY_10'] === 'number') {
+                    player.snipes = parseInt(row['__EMPTY_10']);
+                }
+                
+                // 首杀数（__EMPTY_11）
+                if (row['__EMPTY_11'] !== undefined && typeof row['__EMPTY_11'] === 'number') {
+                    player.firstKills = parseInt(row['__EMPTY_11']);
+                }
+                
+                // 首死数（__EMPTY_12）
+                if (row['__EMPTY_12'] !== undefined && typeof row['__EMPTY_12'] === 'number') {
+                    player.firstDeaths = parseInt(row['__EMPTY_12']);
+                }
+
+                console.log('解析到选手:', player.name, player.kda);
+                players.push(player);
+            });
+            return players;
+        }
+
+
+
+        // 标签页切换功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 主标签页切换
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetTab = btn.getAttribute('data-tab');
+                    
+                    // 移除所有激活状态
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabPanes.forEach(p => p.classList.remove('active'));
+                    
+                    // 激活当前标签
+                    btn.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                    
+                    // 如果切换到数据看板，重新渲染数据并显示子菜单
+                    if (targetTab === 'data-dashboard') {
+                        renderPlayerData();
+                        renderLeaderboards();
+                        document.getElementById('subTabNavContainer').style.display = 'block';
+                    } else {
+                        // 切换到其他标签页时隐藏子菜单
+                        document.getElementById('subTabNavContainer').style.display = 'none';
+                    }
+                });
+            });
+
+            // 数据看板子标签页切换
+            const subTabBtns = document.querySelectorAll('.sub-tab-btn');
+            const subTabPanes = document.querySelectorAll('.sub-tab-pane');
+
+            subTabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetSubTab = btn.getAttribute('data-subtab');
+                    
+                    // 移除所有激活状态
+                    subTabBtns.forEach(b => b.classList.remove('active'));
+                    subTabPanes.forEach(p => p.classList.remove('active'));
+                    
+                    // 激活当前子标签
+                    btn.classList.add('active');
+                    document.getElementById(targetSubTab).classList.add('active');
+                    
+                    // 重新渲染对应内容
+                    if (targetSubTab === 'player-data') {
+                        renderPlayerData();
+                    } else if (targetSubTab === 'leaderboards') {
+                        renderLeaderboards();
+                    }
+                });
+            });
+
+            // 初始化页面
+            renderMatchList();
+        });
+
+        // 收集所有选手数据
+        function collectAllPlayersData() {
+            const playersData = {};
+            
+            matches.forEach(match => {
+                // 收集队伍A的选手数据
+                match.teamA.players.forEach(player => {
+                    if (!playersData[player.name]) {
+                        playersData[player.name] = {
+                            name: player.name,
+                            totalMatches: 0,
+                            totalRating: 0,
+                            totalRWS: 0,
+                            totalKills: 0,
+                            totalDeaths: 0,
+                            totalADR: 0,
+                            totalHeadshots: 0,
+                            totalHeadshotPercentage: 0,
+                            totalKast: 0,
+                            totalSnipes: 0,
+                            totalFirstKills: 0,
+                            totalFirstDeaths: 0
+                        };
+                    }
+                    
+                    // 更新选手数据
+                    const playerData = playersData[player.name];
+                    playerData.totalMatches++;
+                    playerData.totalRating += parseFloat(player.rating) || 0;
+                    playerData.totalRWS += parseFloat(player.rws) || 0;
+                    
+                    // 从KDA中提取击杀和死亡数
+                    const kdaParts = player.kda.split('/');
+                    if (kdaParts.length === 3) {
+                        playerData.totalKills += parseInt(kdaParts[0]) || 0;
+                        playerData.totalDeaths += parseInt(kdaParts[1]) || 0;
+                    }
+                    
+                    playerData.totalADR += parseInt(player.adr) || 0;
+                    playerData.totalHeadshots += parseInt(player.headshots) || 0;
+                    playerData.totalHeadshotPercentage += parseInt(player.headshotPercentage) || 0;
+                    playerData.totalKast += parseInt(player.kast) || 0;
+                    playerData.totalSnipes += parseInt(player.snipes) || 0;
+                    playerData.totalFirstKills += parseInt(player.firstKills) || 0;
+                    playerData.totalFirstDeaths += parseInt(player.firstDeaths) || 0;
+                });
+                
+                // 收集队伍B的选手数据
+                match.teamB.players.forEach(player => {
+                    if (!playersData[player.name]) {
+                        playersData[player.name] = {
+                            name: player.name,
+                            totalMatches: 0,
+                            totalRating: 0,
+                            totalRWS: 0,
+                            totalKills: 0,
+                            totalDeaths: 0,
+                            totalADR: 0,
+                            totalHeadshots: 0,
+                            totalHeadshotPercentage: 0,
+                            totalKast: 0,
+                            totalSnipes: 0,
+                            totalFirstKills: 0,
+                            totalFirstDeaths: 0
+                        };
+                    }
+                    
+                    // 更新选手数据
+                    const playerData = playersData[player.name];
+                    playerData.totalMatches++;
+                    playerData.totalRating += parseFloat(player.rating) || 0;
+                    playerData.totalRWS += parseFloat(player.rws) || 0;
+                    
+                    // 从KDA中提取击杀和死亡数
+                    const kdaParts = player.kda.split('/');
+                    if (kdaParts.length === 3) {
+                        playerData.totalKills += parseInt(kdaParts[0]) || 0;
+                        playerData.totalDeaths += parseInt(kdaParts[1]) || 0;
+                    }
+                    
+                    playerData.totalADR += parseInt(player.adr) || 0;
+                    playerData.totalHeadshots += parseInt(player.headshots) || 0;
+                    playerData.totalHeadshotPercentage += parseInt(player.headshotPercentage) || 0;
+                    playerData.totalKast += parseInt(player.kast) || 0;
+                    playerData.totalSnipes += parseInt(player.snipes) || 0;
+                    playerData.totalFirstKills += parseInt(player.firstKills) || 0;
+                    playerData.totalFirstDeaths += parseInt(player.firstDeaths) || 0;
+                });
+            });
+            
+            return playersData;
+        }
+
+        // 渲染选手数据
+        function renderPlayerData() {
+            const playersData = collectAllPlayersData();
+            const tableContainer = document.getElementById('playerStatsTable');
+            
+            // 如果没有数据
+            if (Object.keys(playersData).length === 0) {
+                tableContainer.innerHTML = '<p>暂无选手数据</p>';
+                return;
+            }
+            
+            // 创建表格
+            let tableHTML = `
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>选手名称</th>
+                            <th>出场次数</th>
+                            <th>平均Rating+</th>
+                            <th>平均RWS</th>
+                            <th>平均K/D</th>
+                            <th>平均ADR</th>
+                            <th>平均爆头率</th>
+                            <th>平均KAST</th>
+                            <th>平均狙杀数</th>
+                            <th>平均首杀数</th>
+                            <th>平均首死数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            // 填充表格数据
+            Object.values(playersData).forEach(player => {
+                const avgRating = (player.totalRating / player.totalMatches).toFixed(2);
+                const avgRWS = (player.totalRWS / player.totalMatches).toFixed(1);
+                const avgKD = player.totalDeaths > 0 ? (player.totalKills / player.totalDeaths).toFixed(2) : player.totalKills;
+                const avgADR = Math.round(player.totalADR / player.totalMatches);
+                const avgHeadshotPercentage = Math.round(player.totalHeadshotPercentage / player.totalMatches);
+                const avgKast = Math.round(player.totalKast / player.totalMatches);
+                const avgSnipes = Math.round((player.totalSnipes / player.totalMatches) * 10) / 10;
+                const avgFirstKills = Math.round((player.totalFirstKills / player.totalMatches) * 10) / 10;
+                const avgFirstDeaths = Math.round((player.totalFirstDeaths / player.totalMatches) * 10) / 10;
+                
+                tableHTML += `
+                    <tr>
+                        <td>${player.name}</td>
+                        <td>${player.totalMatches}</td>
+                        <td>${avgRating}</td>
+                        <td>${avgRWS}</td>
+                        <td>${avgKD}</td>
+                        <td>${avgADR}</td>
+                        <td>${avgHeadshotPercentage}%</td>
+                        <td>${avgKast}%</td>
+                        <td>${avgSnipes}</td>
+                        <td>${avgFirstKills}</td>
+                        <td>${avgFirstDeaths}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</tbody></table>';
+            tableContainer.innerHTML = tableHTML;
+        }
+
+        // 计算首杀成功率
+        function calculateFirstKillSuccessRate(playerData) {
+            const totalFirstEngagements = playerData.totalFirstKills + playerData.totalFirstDeaths;
+            return totalFirstEngagements > 0 ? (playerData.totalFirstKills / totalFirstEngagements * 100).toFixed(1) : 0;
+        }
+
+        // 渲染榜单
+        function renderLeaderboards() {
+            const playersData = collectAllPlayersData();
+            const leaderboardsContent = document.getElementById('leaderboardsContent');
+            
+            // 如果没有数据
+            if (Object.keys(playersData).length === 0) {
+                leaderboardsContent.innerHTML = '<p>暂无选手数据</p>';
+                return;
+            }
+            
+            // 转换为数组以便排序
+            const playersArray = Object.values(playersData);
+            
+            // 1. 赛事MVP实时榜
+            const mvpLeaderboard = playersArray.map(player => {
+                const avgRating = player.totalRating / player.totalMatches;
+                const avgRWS = player.totalRWS / player.totalMatches;
+                const avgADR = player.totalADR / player.totalMatches;
+                const firstKillRate = calculateFirstKillSuccessRate(player);
+                
+                // 计算MVP分数 (Rating+70% + RWS15% + ADR15%)
+                const mvpScore = (avgRating * 0.7) + (avgRWS * 0.15) + (avgADR * 0.15);
+                
+                return {
+                    name: player.name,
+                    score: mvpScore.toFixed(2),
+                    avgRating: avgRating.toFixed(2),
+                    avgRWS: avgRWS.toFixed(1),
+                    avgADR: avgADR.toFixed(0),
+                    firstKillRate: firstKillRate + '%'
+                };
+            }).sort((a, b) => b.score - a.score).slice(0, 10);
+            
+            // 2. 突破手排行榜
+            const entryFraggerLeaderboard = playersArray.map(player => {
+                const avgFirstKills = player.totalFirstKills / player.totalMatches;
+                const avgFirstDeaths = player.totalFirstDeaths / player.totalMatches;
+                const firstKillSuccessRate = calculateFirstKillSuccessRate(player);
+                const avgKast = player.totalKast / player.totalMatches;
+                
+                // 计算突破手分数 (首杀数 + 首杀成功率 + KAST)
+                const entryFraggerScore = avgFirstKills + (parseFloat(firstKillSuccessRate) / 100) + (avgKast / 100);
+                
+                return {
+                    name: player.name,
+                    score: entryFraggerScore.toFixed(2),
+                    avgFirstKills: avgFirstKills.toFixed(1),
+                    firstKillSuccessRate: firstKillSuccessRate + '%',
+                    avgKast: avgKast.toFixed(0) + '%'
+                };
+            }).sort((a, b) => b.score - a.score).slice(0, 10);
+            
+            // 3. 狙击手荣耀榜
+            const sniperLeaderboard = playersArray.map(player => {
+                const avgSnipes = player.totalSnipes / player.totalMatches;
+                const totalKills = player.totalKills;
+                const sniperKillRatio = totalKills > 0 ? (player.totalSnipes / totalKills * 100).toFixed(1) : 0;
+                const avgFirstKills = player.totalFirstKills / player.totalMatches;
+                const firstKillSnipeRatio = avgFirstKills > 0 ? (player.totalSnipes / player.totalFirstKills * 100).toFixed(1) : 0;
+                
+                // 计算狙击手分数 (狙杀数 + 狙杀成功率)
+                const sniperScore = avgSnipes + (parseFloat(sniperKillRatio) / 100);
+                
+                return {
+                    name: player.name,
+                    score: sniperScore.toFixed(2),
+                    avgSnipes: avgSnipes.toFixed(1),
+                    sniperKillRatio: sniperKillRatio + '%',
+                    firstKillSnipeRatio: firstKillSnipeRatio + '%',
+                    isElite: parseFloat(sniperKillRatio) > 14
+                };
+            }).sort((a, b) => b.score - a.score).slice(0, 10);
+            
+            // 4. 生存大师榜
+            const survivalLeaderboard = playersArray.map(player => {
+                const avgKast = player.totalKast / player.totalMatches;
+                const avgDeaths = player.totalDeaths / player.totalMatches;
+                const survivalRate = avgDeaths > 0 ? (1 / avgDeaths) : 10;
+                
+                // 计算生存大师分数 (KAST + 死亡数倒数)
+                const survivalScore = (avgKast / 100) + survivalRate;
+                
+                return {
+                    name: player.name,
+                    score: survivalScore.toFixed(2),
+                    avgKast: avgKast.toFixed(0) + '%',
+                    avgDeaths: avgDeaths.toFixed(1),
+                    isIronMan: avgDeaths < 0.35
+                };
+            }).sort((a, b) => b.score - a.score).slice(0, 10);
+            
+            // 5. 黑马爆发榜
+            // 这里使用每场比赛的最大Rating+作为爆发值
+            let breakoutPlayers = [];
+            matches.forEach(match => {
+                const allPlayersInMatch = [...match.teamA.players, ...match.teamB.players];
+                allPlayersInMatch.forEach(player => {
+                    const rating = parseFloat(player.rating) || 0;
+                    breakoutPlayers.push({
+                        name: player.name,
+                        matchName: match.name,
+                        rating: rating
+                    });
+                });
+            });
+            
+            // 按Rating+排序取前5
+            const breakoutLeaderboard = breakoutPlayers.sort((a, b) => b.rating - a.rating).slice(0, 10);
+            
+            // 6. 爆头精英榜
+            const headshotLeaderboard = playersArray.map(player => {
+                const totalKills = player.totalKills;
+                const avgHeadshots = player.totalHeadshots / player.totalMatches;
+                const headshotRatio = totalKills > 0 ? (player.totalHeadshots / totalKills * 100).toFixed(1) : 0;
+                
+                // 计算爆头精英分数 (平均爆头数 * 爆头率系数)
+                const headshotScore = avgHeadshots * (parseFloat(headshotRatio) / 100 + 0.1);
+                
+                return {
+                    name: player.name,
+                    score: headshotScore.toFixed(2),
+                    avgHeadshots: avgHeadshots.toFixed(1),
+                    headshotRatio: headshotRatio + '%'
+                };
+            }).sort((a, b) => b.score - a.score).slice(0, 10);
+            
+            // 7. 团队影响力榜
+            const teamImpactLeaderboard = playersArray.map(player => {
+                const avgRWS = player.totalRWS / player.totalMatches;
+                const avgFirstKills = player.totalFirstKills / player.totalMatches;
+                const avgFirstDeaths = player.totalFirstDeaths / player.totalMatches;
+                
+                // 计算团队影响力分数 (RWS + 首杀数 - 首死数)
+                const teamImpactScore = avgRWS + avgFirstKills - avgFirstDeaths;
+                
+                return {
+                    name: player.name,
+                    score: teamImpactScore.toFixed(2),
+                    avgRWS: avgRWS.toFixed(1),
+                    avgFirstKills: avgFirstKills.toFixed(1),
+                    avgFirstDeaths: avgFirstDeaths.toFixed(1)
+                };
+            }).sort((a, b) => b.score - a.score).slice(0, 10);
+            
+            // 渲染所有榜单
+            leaderboardsContent.innerHTML = `
+                <div class="leaderboard">
+                    <div class="leaderboard-title">
+                        <span>赛事MVP实时榜</span>
+                        <span class="metric-desc">Rating+70% + RWS15% + ADR15%</span>
+                    </div>
+                    ${renderLeaderboardTable(mvpLeaderboard)}
+                </div>
+                
+                <div class="leaderboard">
+                    <div class="leaderboard-title">
+                        <span>突破手排行榜</span>
+                        <span class="metric-desc">首杀数 + 首杀成功率 + KAST</span>
+                    </div>
+                    ${renderLeaderboardTable(entryFraggerLeaderboard, 'entryFragger')}
+                </div>
+                
+                <div class="leaderboard">
+                    <div class="leaderboard-title">
+                        <span>狙击手荣耀榜</span>
+                        <span class="metric-desc">狙杀数 + 狙杀成功率</span>
+                    </div>
+                    ${renderSniperLeaderboard(sniperLeaderboard)}
+                </div>
+                
+                <div class="leaderboard">
+                    <div class="leaderboard-title">
+                        <span>生存大师榜</span>
+                        <span class="metric-desc">KAST + 生存能力</span>
+                    </div>
+                    ${renderSurvivalLeaderboard(survivalLeaderboard)}
+                </div>
+                
+                <div class="leaderboard">
+                    <div class="leaderboard-title">
+                        <span>黑马爆发榜</span>
+                        <span class="metric-desc">单场最高Rating+</span>
+                    </div>
+                    ${renderBreakoutLeaderboard(breakoutLeaderboard)}
+                </div>
+                
+                <div class="leaderboard">
+                    <div class="leaderboard-title">
+                        <span>爆头精英榜</span>
+                        <span class="metric-desc">平均爆头率</span>
+                    </div>
+                    ${renderHeadshotLeaderboard(headshotLeaderboard)}
+                </div>
+                
+                <div class="leaderboard">
+                    <div class="leaderboard-title">
+                        <span>团队影响力榜</span>
+                        <span class="metric-desc">RWS + 首杀贡献</span>
+                    </div>
+                    ${renderLeaderboardTable(teamImpactLeaderboard, 'teamImpact')}
+                </div>
+            `;
+        }
+
+        // 渲染普通榜单表格
+        function renderLeaderboardTable(data, type) {
+            let tableHTML = '<div class="leaderboard-rows">';
+            
+            data.forEach((player, index) => {
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+                const isTop3 = index < 3;
+                
+                // 添加徽章
+                let badge = '';
+                if (type === 'entryFragger' && index < 3) {
+                    badge = '<span class="badge key-entry">关键突破手</span>';
+                } else if (type === 'teamImpact' && index < 3) {
+                    badge = '<span class="badge team-brain">团队大脑</span>';
+                } else if (!type && index < 3) {
+                    // MVP实时榜的特殊标签
+                    const topLabels = ['TOP 1', 'TOP 2', 'TOP 3'];
+                    badge = `<span class="badge" style="background: linear-gradient(45deg, #ff6b6b, #ee5a24); color: white;">${topLabels[index]}</span>`;
+                }
+                
+                tableHTML += `
+                    <div class="leaderboard-row ${isTop3 ? 'top3' : ''}">
+                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="player-name">${player.name}${badge}</div>
+                        <div class="score">${player.score}</div>
+                        <div class="metric">${player.avgRating || player.avgRWS || player.avgFirstKills || player.avgSnipes}</div>
+                    </div>
+                `;
+            });
+            
+            tableHTML += '</div>';
+            return tableHTML;
+        }
+
+        // 渲染狙击手榜单
+        function renderSniperLeaderboard(data) {
+            let tableHTML = '<div class="leaderboard-rows">';
+            
+            data.forEach((player, index) => {
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+                const isTop3 = index < 3;
+                
+                tableHTML += `
+                    <div class="leaderboard-row ${isTop3 ? 'top3' : ''}">
+                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="player-name">
+                            ${player.name}
+                            ${player.isElite ? '<span class="badge elite-sniper">比simple厉害但不如ZywOo</span>' : ''}
+                        </div>
+                        <div class="score">${player.score}</div>
+                        <div class="metric">${player.avgSnipes} (${player.sniperKillRatio})</div>
+                    </div>
+                `;
+            });
+            
+            tableHTML += '</div>';
+            return tableHTML;
+        }
+
+        // 渲染生存大师榜单
+        function renderSurvivalLeaderboard(data) {
+            let tableHTML = '<div class="leaderboard-rows">';
+            
+            data.forEach((player, index) => {
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+                const isTop3 = index < 3;
+                
+                tableHTML += `
+                    <div class="leaderboard-row ${isTop3 ? 'top3' : ''}">
+                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="player-name">
+                            ${player.name}
+                            ${isTop3 ? '<span class="badge iron-man">钢铁侠</span>' : ''}
+                        </div>
+                        <div class="score">${player.score}</div>
+                        <div class="metric">${player.avgKast} (${player.avgDeaths})</div>
+                    </div>
+                `;
+            });
+            
+            tableHTML += '</div>';
+            return tableHTML;
+        }
+
+        // 渲染黑马爆发榜单
+        function renderBreakoutLeaderboard(data) {
+            let tableHTML = '<div class="leaderboard-rows">';
+            
+            data.forEach((player, index) => {
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+                const isTop3 = index < 3;
+                
+                tableHTML += `
+                    <div class="leaderboard-row ${isTop3 ? 'top3' : ''}">
+                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="player-name">
+                            ${player.name}
+                            ${isTop3 ? '<span class="badge breakout">新星崛起</span>' : ''}
+                        </div>
+                        <div class="score">${player.rating}</div>
+                        <div class="metric">${player.matchName}</div>
+                    </div>
+                `;
+            });
+            
+            tableHTML += '</div>';
+            return tableHTML;
+        }
+
+        // 渲染爆头精英榜单
+        function renderHeadshotLeaderboard(data) {
+            let tableHTML = '<div class="leaderboard-rows">';
+            
+            data.forEach((player, index) => {
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+                const isTop3 = index < 3;
+                
+                // 为前三名添加特殊标签
+                let specialBadge = '';
+                if (index === 0) {
+                    specialBadge = '<span class="badge" style="background: linear-gradient(45deg, #ff6b6b, #ee5a24); color: white;">kuku打头开挂了</span>';
+                } else if (index === 1) {
+                    specialBadge = '<span class="badge" style="background: linear-gradient(45deg, #4ecdc4, #45b7d1); color: white;">如开</span>';
+                } else if (index === 2) {
+                    specialBadge = '<span class="badge" style="background: linear-gradient(45deg, #a8edea, #fed6e3); color: #333;">爆头侠</span>';
+                }
+                
+                tableHTML += `
+                    <div class="leaderboard-row ${isTop3 ? 'top3' : ''}">
+                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="player-name">
+                            ${player.name}
+                            ${specialBadge}
+                        </div>
+                        <div class="score">${player.score}</div>
+                        <div class="metric">${player.avgHeadshots} (${player.headshotRatio})</div>
+                    </div>
+                `;
+            });
+            
+            tableHTML += '</div>';
+            return tableHTML;
+        }
+
+        // 初始化样式 - 只保留非重复的样式
+        const style = document.createElement('style');
+        style.textContent = `
+            .metric-desc {
+                font-size: 12px;
+                color: #888;
+                font-weight: normal;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
